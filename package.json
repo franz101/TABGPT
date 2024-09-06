@@ -1,0 +1,17 @@
+{
+  "name": "tabgpt",
+  "version": "1.0.0",
+  "main": "tailwind.config.js",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.10"
+  },
+  "scripts": {
+    "dev": "tailwindcss -i ./src/css/input.css -o ./src/dist/styles.css --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
