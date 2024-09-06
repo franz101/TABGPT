@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "TabGPT: Ask ChatGPT, Gemini and Claude at the same time with one click",
   "version": "1.0",
+  "description": "Ask ChatGPT, Gemini and Claude at the same time with one click",
   "icons": {
     "16": "images/icon-16.png",
     "32": "images/icon-32.png",
@@ -12,20 +13,17 @@
     "service_worker": "src/service_worker.js",
     "type": "module"
   },
+  "action": {
+    "default_title": "Click to open panel"
+  },
   "side_panel": {
     "default_path": "src/app.html"
-  },
-  "action": {
-    "default_popup": "src/app.html"
   },
   "permissions": [
     "tabs",
     "storage",
     "scripting",
     "sidePanel"
-  ],
-  "host_permissions": [
-    "https://developer.chrome.com/*"
   ],
   "content_scripts": [
     {

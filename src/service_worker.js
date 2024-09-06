@@ -1,5 +1,10 @@
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+});
 
+
+
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 let state = {
   inactive: true,
@@ -8,12 +13,10 @@ let state = {
   tabs: []
 };
 const tabSwitching = async () => {
-    console.log("Tab switching", state);
     if (state.inactive || state.checking) return;
     state.checking = true;
     for (const tabId of Object.values(state.tabs)) {
       try {
-        console.log("Switching to tab", tabId);
         await chrome.tabs.update(tabId, { active: true });
         await delay(250);
       } catch (error) {
@@ -24,7 +27,6 @@ const tabSwitching = async () => {
   }
   
   function startTabSwitching() {
-    console.log("Start Tab switching", state);
     if (!state.inactive || state.checking) return;
     state.inactive = false;
     state.intervalFunction = setInterval(tabSwitching, 200);
@@ -41,13 +43,11 @@ const tabSwitching = async () => {
 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log("Received content in service worker:", message, sender);
     const { action } = message;
     switch (action) {
         case 'loaded':
             chrome.storage.session.get(["question"], ({ question }) => {
                 if(!question) return;
-                console.log("question", question)
                 chrome.tabs.sendMessage(sender.tab.id, { action: 'question', payload: question });
             })
             break;
@@ -77,27 +77,3 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 
-
-
-chrome.storage.onChanged.addListener((changes, namespace) => {
-    for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
-      console.log(
-        `SW Storage key "${key}" in namespace "${namespace}" changed.`,
-        `SW Old value was "${oldValue}", new value is "${newValue}".`
-      );
-    }
-  });
-
-
-  chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
-    if (!tab.url) return;
-
-    // Enables the side panel on chatgpt.com
-    // Disables the side panel on all other sites
-    await chrome?.sidePanel?.setOptions({
-        tabId,
-        enabled: true
-    });
-});
-
-chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });

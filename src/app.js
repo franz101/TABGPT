@@ -1,3 +1,4 @@
+
 const delay = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -5,27 +6,8 @@ const delay = (ms) => {
 
 const chats = {}
 const tabs = {}
-const state = {
-  inactive: true,
-  checking: false
-}
 
-setInterval(async () => {
-  if (state.inactive || state.checking) return;
-  state.checking = true;
-  for (const tab of tabs) {
-    try {
-      chrome.tabs.update(tab, { active: true });
-      await delay(1000)
-      chrome.tabs.update(tab, { active: false });
-    } catch (error) {
-
-    }
-  }
-  state.checking = false;
-}, 500)
 document.addEventListener('DOMContentLoaded', async () => {
-
   // Get the form and input field elements
   const form = document.getElementById('extension-form');
 
@@ -83,24 +65,7 @@ chrome.storage.session.onChanged.addListener((changes, namespace) => {
   for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
     if (key.includes('.')) {
       chats[key] = newValue
-      setTimeout(() => {
-        state.inactive = true;
-      }, 2000)
     }
     renderChats();
   }
 });
-
-
-chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
-  if (!tab.url) return;
-
-  // Enables the side panel on chatgpt.com
-  // Disables the side panel on all other sites
-  await chrome?.sidePanel?.setOptions({
-    tabId,
-    enabled: true
-  });
-});
-
-chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
