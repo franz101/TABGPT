@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Add an event listener to the form's submit event
   form.addEventListener('submit', async (event) => {
     // Prevent the default form submission behavior
-    Object.keys(chats).forEach(key => delete myDict[key]);
+    Object.keys(chats).forEach(key => delete chats[key]);
 
     event.preventDefault();
     const inputField = document.getElementById('question-input');
