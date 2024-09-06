@@ -3,12 +3,8 @@ const delay = (ms) => {
 }
 
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("Received message in popup:", message, sender);
-});
-
 const chats = {}
-const tabs = []
+const tabs = {}
 const state = {
   inactive: true,
   checking: false
@@ -18,9 +14,13 @@ setInterval(async () => {
   if (state.inactive || state.checking) return;
   state.checking = true;
   for (const tab of tabs) {
-    chrome.tabs.update(tab, { active: true });
-    await delay(1000)
-    chrome.tabs.update(tab, { active: false });
+    try {
+      chrome.tabs.update(tab, { active: true });
+      await delay(1000)
+      chrome.tabs.update(tab, { active: false });
+    } catch (error) {
+
+    }
   }
   state.checking = false;
 }, 500)
@@ -39,24 +39,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     chrome.storage.session.set({ question: inputField.value })
 
-    // Open a new tab with the website
-    const newTab = await chrome.tabs.create({ url: 'https://chatgpt.com' });
-    tabs.push(newTab.id);
 
-    // Wait for the tab to be fully loaded
-    chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-      if (tabId === newTab.id && info.status === 'complete') {
-        // Remove the listener to prevent it from triggering multiple times
-        chrome.tabs.onUpdated.removeListener(listener);
-        const claude = chrome.tabs.create({ url: 'https://claude.ai' });
-        tabs.push(claude.id);
-        const gemini = chrome.tabs.create({ url: 'https://gemini.google.com/app' });
-        tabs.push(gemini.id);
-        state.inactive = false;
-        // Send a message to the content script in the new tab
-        chrome.tabs.sendMessage(tabId, { action: 'readFocusedElement' });
-      }
-    });
+    // Create tabs
+    const claudeUrl = 'https://claude.ai';
+    const claude = await chrome.tabs.create({ url: claudeUrl });
+    tabs[new URL(claudeUrl).host] = claude.id;
+
+    const geminiUrl = 'https://gemini.google.com/app';
+    const gemini = await chrome.tabs.create({ url: geminiUrl });
+    tabs[new URL(geminiUrl).host] = gemini.id;
+    const chatgptUrl = 'https://chatgpt.com';
+    const chatgpt = await chrome.tabs.create({ url:chatgptUrl });
+    tabs[new URL(chatgptUrl).host] = chatgpt.id;
+
+    chrome.runtime.sendMessage({ action: 'startTabSwitching', tabs });
+
   });
 });
 
@@ -65,6 +62,7 @@ const renderChats = () => {
   const chatList = document.getElementById('chat-list');
   chatList.innerHTML = '';
   if (!chats) return;
+  chrome.runtime.sendMessage({ action: 'stopTabSwitching', tabs: tabs });
   Object.entries(chats).forEach(([key, newValue]) => {
     const chatItem = document.createElement('li');
     chatItem.innerHTML = `
@@ -90,9 +88,19 @@ chrome.storage.session.onChanged.addListener((changes, namespace) => {
       }, 2000)
     }
     renderChats();
-    console.log(
-      `PU Storage key "${key}" in namespace "${namespace}" changed.`,
-      `PU Old value was "${oldValue}", new value is "${newValue}".`
-    );
   }
 });
+
+
+chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
+  if (!tab.url) return;
+
+  // Enables the side panel on chatgpt.com
+  // Disables the side panel on all other sites
+  await chrome?.sidePanel?.setOptions({
+    tabId,
+    enabled: true
+  });
+});
+
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });

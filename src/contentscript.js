@@ -1,5 +1,3 @@
-console.log("Content script loaded");
-
 const delay = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -41,13 +39,8 @@ function waitForElement(selector) {
   });
 }
 
-// Example usage: Wait for an element with ID 'myElement' to be available in the DOM
 waitForElement('button').then((element) => {
-  chrome.runtime.sendMessage({ action: "loaded", title: document.title }, (response) => {
-    console.log("Response from background script:", response);
-  });
-
-  // Perform any actions with the element here
+  chrome.runtime.sendMessage({ action: "loaded", title: document.title })
 });
 
 const askQuestionGemini = async (question) => {
@@ -83,17 +76,11 @@ const askQuestionChatGPT = async (question) => {
   await waitForElement('[aria-label="Send prompt"]')
   document.querySelector('[aria-label="Send prompt"]').click()
   chrome.runtime.sendMessage({ action: 'response', payload: "Loading..." });
-  console.log("Processing")
   await waitForElement('[aria-label="Stop streaming"]')
-  console.log("Processing detected")
-  console.log("Processed")
   await waitForElement('[data-message-author-role="assistant"]:last-of-type')
-  console.log("Message")
   await waitForElement('[aria-label="Send prompt"]')
-  await delay(2000)
 
   const latestArticle = document.querySelector('[data-message-author-role="assistant"]:last-of-type')
-  console.log("Article", latestArticle.textContent)
   if (latestArticle) chrome.runtime.sendMessage({ action: 'response', payload: latestArticle.textContent });
 
 }
@@ -110,9 +97,9 @@ const askQuestionAnthropic = async (question) => {
   } catch (error) {
     chrome.runtime.sendMessage({ action: 'response', payload: "Error" });
   }
-  await delay(2000)
-  await waitForElement('[aria-label="Send Message"]')
-  const latestArticle = document.querySelector('.font-claude-message:last-of-type').textContent
+  await waitForElement('[data-is-streaming="true"]')
+  await waitForElement('[data-is-streaming="false"]')
+  const latestArticle = document.querySelector('[data-is-streaming="false"]:last-of-type').textContent
   chrome.runtime.sendMessage({ action: 'response', payload: latestArticle.textContent });
 }
 
@@ -135,7 +122,6 @@ const askQuestion = (question) => {
 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("Received message in content script:", message, sender);
   const { action } = message;
   switch (action) {
     case 'question':
