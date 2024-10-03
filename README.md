@@ -10,6 +10,6 @@ Download the Folder and load it into Chrome Extension, activate the sidebar by c
 
 https://github.com/user-attachments/assets/1d3e6e3c-5dcf-4693-9735-be3d2a2975ce
 
-
+## Animated demo
 
 ![TABTGPT_CHROME_EXTENSION](https://github.com/user-attachments/assets/ed272641-be2c-4625-b724-4b811f7f54d4)
