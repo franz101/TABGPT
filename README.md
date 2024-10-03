@@ -5,6 +5,8 @@
 I was tired of tab switching between different models and copy pasting the question.
 So I made one interface to rule them all! 🧙
 
+Blog post [explaining TABGPT](https://franz101.substack.com/p/tabgpt-ask-chatgpt-gemini-and-claude)
+
 ## How do I use it?
 Download the Folder and load it into Chrome Extension, activate the sidebar by clicking the extension icon and ask your question 🚀 
 
